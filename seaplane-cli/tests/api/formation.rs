@@ -538,7 +538,6 @@ fn formation_plan_launch() {
             --name stubb \
             --include-flight-plan name=pequod,image=stubb/alpine:latest \
             --include-flight-plan name=flask,image=stubb/alpine:latest \
-            --public-endpoint /=flask:80 \
             --launch",
         should_create = true,
         remote_instances = false
@@ -575,12 +574,6 @@ fn formation_plan_launch_all_fields() {
             --name stubb \
             --include-flight-plan name=pequod,image=stubb/alpine:latest \
             --include-flight-plan name=flask,image=stubb/alpine:latest,min=5,max=20,architecture=amd64 \
-            --providers aws \
-            --exclude-providers azure \
-            --regions xu \
-            --exclude-regions xn \
-            --public-endpoint /=flask:80,/foo=pequod:8443 \
-            --flight-endpoint udp:2424=pequod:9090,tcp:2222=flask:22 \
             --launch",
         should_create = true,
         remote_instances = false,
@@ -603,7 +596,6 @@ fn formation_plan_launch_fetch() {
                 --name stubb \
                 --include-flight-plan name=pequod,image=stubb/alpine:latest \
                 --include-flight-plan name=flask,image=stubb/alpine:latest \
-                --public-endpoint /=flask:80 \
                 --launch \
                 --fetch",
         should_create = true,
@@ -618,7 +610,6 @@ fn formation_plan_grounded_new() {
             --name stubb \
             --include-flight-plan name=pequod,image=stubb/alpine:latest \
             --include-flight-plan name=flask,image=stubb/alpine:latest \
-            --public-endpoint /=flask:80 \
             --grounded",
         should_create = true,
         remote_instances = false
