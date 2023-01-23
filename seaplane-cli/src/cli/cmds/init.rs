@@ -56,11 +56,15 @@ impl CliCommand for SeaplaneInit {
                 toml::to_string_pretty(&RawConfig::default()).unwrap(),
                 "config",
             ),
+<<<<<<< HEAD
             (
                 ctx.state_file(),
                 json!({ "state_version": CURRENT_STATE_VERSION }).to_string(),
                 "formations",
             ),
+=======
+            (ctx.formations_file(), "{}".to_string(), "formations"),
+>>>>>>> 23cf35f (remove flights as objects)
         ];
         // TODO: @security create the file with limited permissions
         let mut did_create = false;
