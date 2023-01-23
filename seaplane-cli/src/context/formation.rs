@@ -1,9 +1,6 @@
 use std::collections::HashSet;
 
-use seaplane::api::{
-    compute::v1::FormationConfiguration as FormationConfigurationModel,
-    shared::v1::{Provider as ProviderModel, Region as RegionModel},
-};
+use seaplane::api::compute::v2::Formation as FormationModel;
 
 use crate::{
     cli::{cmds::formation::SeaplaneFormationPlanArgMatches, Provider, Region},
@@ -101,60 +98,13 @@ impl FormationCtx {
         self.cfg_ctx
             .flights
             .extend(flight_names.iter().map(|s| s.to_string()));
-        self.cfg_ctx.affinities.extend(
-            matches
-                .get_many::<String>("affinity")
-                .unwrap_or_default()
-                .map(ToOwned::to_owned),
-        );
-        self.cfg_ctx.connections.extend(
-            matches
-                .get_many::<String>("connection")
-                .unwrap_or_default()
-                .map(ToOwned::to_owned),
-        );
-        self.cfg_ctx.providers_allowed = matches
-            .get_many::<Provider>("provider")
-            .unwrap_or_default()
-            .filter_map(Provider::into_model)
-            .collect();
-        self.cfg_ctx.providers_denied = matches
-            .get_many::<Provider>("exclude-provider")
-            .unwrap_or_default()
-            .filter_map(Provider::into_model)
-            .collect();
-        self.cfg_ctx.regions_allowed = matches
-            .get_many::<Region>("region")
-            .unwrap_or_default()
-            .filter_map(Region::into_model)
-            .collect();
-        self.cfg_ctx.regions_denied = matches
-            .get_many::<Region>("exclude-region")
-            .unwrap_or_default()
-            .filter_map(Region::into_model)
-            .collect();
-        self.cfg_ctx.public_endpoints = matches
-            .get_many::<Endpoint>("public-endpoint")
-            .unwrap_or_default()
-            .cloned()
-            .collect();
-        self.cfg_ctx.formation_endpoints = matches
-            .get_many::<Endpoint>("formation-endpoint")
-            .unwrap_or_default()
-            .cloned()
-            .collect();
-        self.cfg_ctx.flight_endpoints = matches
-            .get_many::<Endpoint>("flight-endpoint")
-            .unwrap_or_default()
-            .cloned()
-            .collect();
         Ok(())
     }
 
-    /// Creates a new seaplane::api::compute::v1::FormationConfiguration from the contained values
-    pub fn configuration_model(&self, ctx: &Ctx) -> Result<FormationConfigurationModel> {
+    /// Creates a new seaplane::api::compute::v2::Formation from the contained values
+    pub fn configuration_model(&self, ctx: &Ctx) -> Result<FormationModel> {
         // Create the new Formation model from the CLI inputs
-        let mut f_model = FormationConfigurationModel::builder();
+        let mut f_model = FormationModel::builder();
 
         for flight_name in &self.cfg_ctx.flights {
             let flight = ctx
@@ -163,38 +113,6 @@ impl FormationCtx {
                 .find_name(flight_name)
                 .ok_or_else(|| no_matching_flight(flight_name))?;
             f_model = f_model.add_flight(flight.model.clone());
-        }
-
-        // TODO: clean this up...yuck
-        for &item in &self.cfg_ctx.providers_allowed {
-            f_model = f_model.add_allowed_provider(item);
-        }
-        for &item in &self.cfg_ctx.providers_denied {
-            f_model = f_model.add_denied_provider(item);
-        }
-        for &item in &self.cfg_ctx.regions_allowed {
-            f_model = f_model.add_allowed_region(item);
-        }
-        for &item in &self.cfg_ctx.regions_denied {
-            f_model = f_model.add_denied_region(item);
-        }
-        for item in &self.cfg_ctx.public_endpoints {
-            f_model = f_model.add_public_endpoint(item.key(), item.value());
-        }
-        for item in &self.cfg_ctx.flight_endpoints {
-            f_model = f_model.add_flight_endpoint(item.key(), item.value());
-        }
-        #[cfg(feature = "unstable")]
-        {
-            for item in &self.cfg_ctx.affinities {
-                f_model = f_model.add_affinity(item);
-            }
-            for item in &self.cfg_ctx.connections {
-                f_model = f_model.add_connection(item);
-            }
-            for item in &self.cfg_ctx.formation_endpoints {
-                f_model = f_model.add_formation_endpoint(item.key(), item.value());
-            }
         }
 
         // TODO: probably match and check errors
@@ -206,19 +124,4 @@ impl FormationCtx {
 pub struct FormationCfgCtx {
     /// `String` is a flight name because that's the only thing shared by both local and remote
     pub flights: Vec<String>,
-    /// `String` is a flight name because that's the only thing shared by both local and remote
-    pub affinities: Vec<String>,
-    /// `String` is a flight name because that's the only thing shared by both local and remote
-    pub connections: Vec<String>,
-    /// Use actual API model since that is ultimately what we want
-    pub providers_allowed: HashSet<ProviderModel>,
-    /// Use actual API model since that is ultimately what we want
-    pub providers_denied: HashSet<ProviderModel>,
-    /// Use actual API model since that is ultimately what we want
-    pub regions_allowed: HashSet<RegionModel>,
-    /// Use actual API model since that is ultimately what we want
-    pub regions_denied: HashSet<RegionModel>,
-    pub public_endpoints: Vec<Endpoint>,
-    pub formation_endpoints: Vec<Endpoint>,
-    pub flight_endpoints: Vec<Endpoint>,
 }

@@ -1,30 +1,19 @@
 pub mod common;
-#[cfg(feature = "unstable")]
-mod configuration;
-#[cfg(feature = "unstable")]
-mod container_stats;
 mod delete;
 mod fetch;
 mod land;
 mod launch;
 mod list;
-#[cfg(feature = "unstable")]
-mod load_balance;
 mod plan;
 mod status;
 #[cfg(feature = "unstable")]
 mod template;
 
 use clap::{ArgMatches, Command};
-pub use common::{Provider, Region};
 pub use plan::SeaplaneFormationPlanArgMatches;
 
 #[cfg(feature = "unstable")]
-use self::{
-    configuration::SeaplaneFormationConfiguration,
-    container_stats::SeaplaneFormationContainerStatistics,
-    load_balance::SeaplaneFormationLoadBalance, template::SeaplaneFormationTemplate,
-};
+use self::template::SeaplaneFormationTemplate;
 pub use self::{
     delete::SeaplaneFormationDelete, fetch::SeaplaneFormationFetch, land::SeaplaneFormationLand,
     launch::SeaplaneFormationLaunch, list::SeaplaneFormationList, plan::SeaplaneFormationPlan,
@@ -66,11 +55,7 @@ impl SeaplaneFormation {
 
         #[cfg(feature = "unstable")]
         {
-            app = app
-                .subcommand(SeaplaneFormationConfiguration::command())
-                .subcommand(SeaplaneFormationContainerStatistics::command())
-                .subcommand(SeaplaneFormationLoadBalance::command())
-                .subcommand(SeaplaneFormationTemplate::command())
+            app = app.subcommand(SeaplaneFormationTemplate::command())
         }
 
         app
@@ -90,14 +75,6 @@ impl CliCommand for SeaplaneFormation {
             Some(("launch", m)) => Some((Box::new(SeaplaneFormationLaunch), m)),
             Some(("list", m)) => Some((Box::new(SeaplaneFormationList), m)),
             Some(("status", m)) => Some((Box::new(SeaplaneFormationStatus), m)),
-            #[cfg(feature = "unstable")]
-            Some(("configuration", m)) => Some((Box::new(SeaplaneFormationConfiguration), m)),
-            #[cfg(feature = "unstable")]
-            Some(("container-statistics", m)) => {
-                Some((Box::new(SeaplaneFormationContainerStatistics), m))
-            }
-            #[cfg(feature = "unstable")]
-            Some(("load-balance", m)) => Some((Box::new(SeaplaneFormationLoadBalance), m)),
             #[cfg(feature = "unstable")]
             Some(("template", m)) => Some((Box::new(SeaplaneFormationTemplate), m)),
             _ => None,

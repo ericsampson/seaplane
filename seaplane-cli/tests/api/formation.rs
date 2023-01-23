@@ -1,13 +1,7 @@
 use httpmock::prelude::*;
-use seaplane::api::{
-    compute::v1::FormationConfiguration as FormationConfigurationModel,
-    shared::v1::{Provider, Region},
-};
+use seaplane::api::compute::v2::Formation as FormationModel;
 use seaplane_cli::{
-    context::Ctx,
-    ops::formation::{Formation, FormationConfiguration},
-    printer::printer,
-    test_main_exec_with_ctx,
+    context::Ctx, ops::formation::Formation, printer::printer, test_main_exec_with_ctx,
 };
 use serde_json::json;
 use wildmatch::WildMatch;
@@ -23,9 +17,8 @@ use super::{then, when, when_json, MOCK_SERVER};
 const DEFAULT_CFG_UUID: &str = "46c5d58c-7b8b-4e8d-9e98-26bb31b9ab8f";
 
 fn build_ctx_with_default_formation(local_only: bool) -> Ctx {
-    let fcm: FormationConfigurationModel =
-        serde_json::from_str(&default_cfg_json().to_string()).unwrap();
-    let fc = FormationConfiguration::new(fcm);
+    let fcm: FormationModel = serde_json::from_str(&default_cfg_json().to_string()).unwrap();
+    let fc = Formation::new(fcm);
     let mut f = Formation::new("stubb");
     f.local.insert(fc.id);
     if !local_only {
@@ -42,31 +35,14 @@ fn build_ctx_with_default_formation(local_only: bool) -> Ctx {
 
 fn default_cfg_json() -> serde_json::Value {
     json!({
-        "affinity":[],
-        "connections":[],
         "flights":[{
             "name":"flask",
             "image":"registry.cplane.cloud/stubb/alpine:latest",
-            "minimum":1_u64,
-            "maximum":null,
-            "architecture":[],
-            "api_permission":false
         },
         {
             "name":"pequod",
             "image":"registry.cplane.cloud/stubb/alpine:latest",
-            "minimum":1_u64,
-            "maximum":null,
-            "architecture":[],
-            "api_permission":false
-        }],
-        "public_endpoints":{"http:/":"flask:80"},
-        "formation_endpoints":{},
-        "flight_endpoints":{},
-        "providers_allowed":[],
-        "providers_denied":[],
-        "regions_allowed":[],
-        "regions_denied":[]
+        }]
     })
 }
 
@@ -307,23 +283,10 @@ macro_rules! mock_launch {
                 "queequeg",
                 "117f87c3-c26c-228c-c970-cb8acac2bd11",
                 json!({
-                    "affinity":[],
-                    "connections":[],
                     "flights":[{
                         "name":"ishmael",
                         "image":"registry.cplane.cloud/queequeg/alpine:latest",
-                        "minimum":1_u64,
-                        "maximum":null,
-                        "architecture":[],
-                        "api_permission":false
                     }],
-                    "public_endpoints":{},
-                    "formation_endpoints":{},
-                    "flight_endpoints":{},
-                    "providers_allowed":[],
-                    "providers_denied":[],
-                    "regions_allowed":[],
-                    "regions_denied":[]
                 })
             )
         } else if $remote_instances && !$should_create {
@@ -590,43 +553,17 @@ fn formation_plan_launch_all_fields_unstable() {
             --name stubb \
             --include-flight-plan name=pequod,image=stubb/alpine:latest \
             --include-flight-plan name=flask,image=stubb/alpine:latest,min=5,max=20,architecture=amd64,api-permission \
-            --providers aws \
-            --exclude-providers azure \
-            --regions xu \
-            --exclude-regions xn \
-            --public-endpoint /=flask:80,/foo=pequod:8443 \
-            --formation-endpoint tcp:4242=pequod:8080,udp:4444=pequod:9999 \
-            --flight-endpoint udp:2424=pequod:9090,tcp:2222=flask:22 \
-            --affinity queequeg \
-            --connection queequeg \
             --launch",
         should_create = true,
         remote_instances = false,
         expected_json = json!({
-            "affinity":["queequeg"],
-            "connections":["queequeg"],
             "flights":[{
                 "name":"flask",
                 "image":"registry.cplane.cloud/stubb/alpine:latest",
-                "minimum":5,
-                "maximum":20,
-                "architecture":["AMD64"],
-                "api_permission":true
             },{
                 "name":"pequod",
                 "image":"registry.cplane.cloud/stubb/alpine:latest",
-                "minimum":1,
-                "maximum":null,
-                "architecture":[],
-                "api_permission":false
             }],
-            "public_endpoints":{"http:/":"flask:80", "http:/foo":"pequod:8443"},
-            "formation_endpoints":{"tcp:4242":"pequod:8080","udp:4444":"pequod:9999"},
-            "flight_endpoints":{"udp:2424":"pequod:9090","tcp:2222":"flask:22"},
-            "providers_allowed":["AWS"],
-            "providers_denied":["Azure"],
-            "regions_allowed":["XU"],
-            "regions_denied":["XN"]
         })
     );
 }
@@ -648,30 +585,13 @@ fn formation_plan_launch_all_fields() {
         should_create = true,
         remote_instances = false,
         expected_json = json!({
-            "affinity":[],
-            "connections":[],
             "flights":[{
                 "name":"flask",
                 "image":"registry.cplane.cloud/stubb/alpine:latest",
-                "minimum":5,
-                "maximum":20,
-                "architecture":["AMD64"],
-                "api_permission":false
             },{
                 "name":"pequod",
                 "image":"registry.cplane.cloud/stubb/alpine:latest",
-                "minimum":1,
-                "maximum":null,
-                "architecture":[],
-                "api_permission":false
             }],
-            "public_endpoints":{"http:/":"flask:80", "http:/foo":"pequod:8443"},
-            "formation_endpoints":{},
-            "flight_endpoints":{"udp:2424":"pequod:9090","tcp:2222":"flask:22"},
-            "providers_allowed":["AWS"],
-            "providers_denied":["Azure"],
-            "regions_allowed":["XU"],
-            "regions_denied":["XN"]
         })
     );
 }
@@ -919,9 +839,8 @@ fn formation_status_one_fetch() {
 }
 
 fn ctx_with_remote_id() -> Ctx {
-    let fcm: FormationConfigurationModel =
-        serde_json::from_str(&default_cfg_json().to_string()).unwrap();
-    let mut fc = FormationConfiguration::new(fcm);
+    let fcm: FormationModel = serde_json::from_str(&default_cfg_json().to_string()).unwrap();
+    let mut fc = Formation::new(fcm);
     fc.remote_id = Some(DEFAULT_CFG_UUID.parse().unwrap());
     let mut f = Formation::new("stubb");
     f.local.insert(fc.id);
