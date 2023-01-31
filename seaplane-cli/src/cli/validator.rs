@@ -113,38 +113,9 @@ pub fn validate_flight_name(name: &str) -> StdResult<String, &'static str> {
     Ok(name.into())
 }
 
-/// Current Rules:
-///
-///  - 1-30 alphanumeric (only ASCII lowercase) characters or hyphen (0-9, a-z, A-Z, and '-' )
-///  - hyphens ('-') may not be repeated (i.e. '--')
-///  - no more than three (3) total hyphens
-///  - no consecutive hyphens
-///  - no trailing hyphen
-pub fn validate_formation_name(name: &str) -> StdResult<String, &'static str> {
-    if name.is_empty() {
-        return Err("Formation name cannot be empty");
-    }
-    if name.len() > 30 {
-        return Err("Formation name too long, must be <= 30 in length");
-    }
-    if !name
-        .chars()
-        .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
-    {
-        return Err(
-            "illegal character in Formation name; must only contain ASCII lowercase, digit, or hyphen ('-')",
-        );
-    }
-    if name.chars().filter(|c| *c == '-').count() > 3 {
-        return Err("no more than three hyphens ('-') allowed in Formation name");
-    }
-    if name.contains("--") {
-        return Err("repeated hyphens ('--') not allowed in Formation name");
-    }
-    if name.ends_with('-') {
-        return Err("Formation names may not end with a hyphen ('-')");
-    }
-
+/// Validate formation name using the API rules
+pub fn validate_formation_name(name: &str) -> StdResult<String, String> {
+    seaplane::api::compute::v2::validate_formation_name(name).map_err(|e| e.to_string())?;
     Ok(name.into())
 }
 

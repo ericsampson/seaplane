@@ -13,7 +13,6 @@ use crate::{
     context::Ctx,
     error::{CliError, Result},
     fs::{FromDisk, ToDisk},
-    ops::Id,
     printer::Output,
 };
 
@@ -337,7 +336,6 @@ impl Formation {
 /// Wraps the [`FormationConfiguration`] model adding a local ID and the UUID associated
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Formation {
-    pub id: Id,
     pub model: FormationModel,
 }
 
