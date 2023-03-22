@@ -42,6 +42,11 @@
       "pre-commit": "npm run lint && npm run pretty"
     }
   },
+  "jest": {
+    "testPathIgnorePatterns" : [
+      "__tests__/api/helper.ts" 
+    ]
+  },
   "exports": {
     "import": {
       "types": "./build/esm/types/index.d.ts",

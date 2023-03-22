@@ -6,17 +6,12 @@ import { RestrictionState, SeaplaneApi } from '../../src/model/restrictions';
 
 jest.mock("../../src/api/seaFetch", () => jest.fn());
 
+import { postTokenMock } from './helper';
+
 const textBody = (body: Object) => Promise.resolve({ 
   ok: () => true,
   text: () => Promise.resolve(body) 
 })
-
-const postTokenMock = {
-  post: (url: string, body: string) => Promise.resolve({ 
-    ok: () => true,
-    json: () => Promise.resolve({token: "test_token"}) 
-  })
-}
 
 const mockIdentify = (configuration: Configuration) => {
   seaFetch.mockImplementation((token: string) => (postTokenMock))

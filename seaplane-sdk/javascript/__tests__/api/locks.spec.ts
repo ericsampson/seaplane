@@ -4,21 +4,7 @@ import seaFetch from '../../src/api/seaFetch';
 
 jest.mock("../../src/api/seaFetch", () => jest.fn());
 
-const mockIdentify = (configuration: Configuration) => {
-  seaFetch.mockImplementation((token: string) => ({
-    post: (url: string, body: string) => Promise.resolve({ 
-      ok: () => true,
-      json: () => Promise.resolve({token: "test_token"}) 
-    })
-  }))
-}
-
-const postTokenMock = {
-  post: (url: string, body: string) => Promise.resolve({ 
-    ok: () => true,
-    json: () => Promise.resolve({token: "test_token"}) 
-  })
-}
+import { mockIdentify, postTokenMock } from './helper';
 
 const textBody = (body: Object) => Promise.resolve({ 
   ok: () => true,
