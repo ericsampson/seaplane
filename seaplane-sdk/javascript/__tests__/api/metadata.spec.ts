@@ -54,8 +54,7 @@ describe('Given Metadata API', () => {
     expect(await metadata.get({key: "foo/bar"})).toStrictEqual({
       key: "foo/bar",
       value: "value"
-    })
-    
+    })    
   })
   
   test('delete a key-value pair ', async () => {        
