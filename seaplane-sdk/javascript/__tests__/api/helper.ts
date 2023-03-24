@@ -63,5 +63,17 @@ export const mockServer = (serverUrl: string)  => ({
         return textBody(body)
       }
     }))  
+  },
+  post: (path: string, body: Object, returnBody: Object) => {
+    seaFetch
+      .mockReturnValue(postTokenMock)
+      .mockReturnValueOnce({
+        post: (url: string, postBody: string) => {
+          expect(url).toBe(serverUrl+path)
+          expect(postBody).toBe(JSON.stringify(body))
+
+          return textBody(returnBody)
+        }
+      })
   }
 })
