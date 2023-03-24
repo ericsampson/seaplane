@@ -5,7 +5,7 @@ import seaFetch from '../../src/api/seaFetch';
 
 jest.mock("../../src/api/seaFetch", () => jest.fn());
 
-import { mockIdentify, mockServer } from './helper';
+import { mockServer } from './helper';
 
 describe('Given Metadata API', () => {
 
@@ -14,10 +14,6 @@ describe('Given Metadata API', () => {
   })
   const metadata = new Metadata(config)  
   const server = mockServer("https://metadata.cplane.cloud/v1")
-
-  beforeAll(() => {
-    mockIdentify(config)
-  })
 
   afterEach(() => {
     seaFetch.mockClear()

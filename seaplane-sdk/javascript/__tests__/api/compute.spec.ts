@@ -5,7 +5,7 @@ import seaFetch from '../../src/api/seaFetch';
 
 jest.mock("../../src/api/seaFetch", () => jest.fn());
 
-import { mockIdentify, postTokenMock } from './helper';
+import { mockServer, mockIdentify } from './helper';
 
 const textBody = (body: Object) => Promise.resolve({ 
   ok: () => true,
@@ -40,29 +40,23 @@ describe('Given Compute API', () => {
     apiKey: "test_apikey"
   })
   const compute = new Compute(config)  
-
-  beforeAll(() => {
-    mockIdentify(config)
-  })
+  const server = mockServer("https://compute.cplane.cloud/v2beta")
 
   afterEach(() => {
     seaFetch.mockClear()
   })
 
-  test('get page returns one element', async () => {  
-    seaFetch.mockImplementation((token: string) => ({
-      ...postTokenMock,
-      get: (url: string) => textBody({
-        formations: [
-          API_DEFAULT_FORMATION
-        ],
-        meta: {
-          total: 1,
-          prev: "https://prev-example.com",
-          next: "https://next-example.com"
-        },
-        })
-    }))    
+  test('get page returns one element', async () => {          
+    server.get("/formations", {
+      formations: [
+        API_DEFAULT_FORMATION
+      ],
+      meta: {
+        total: 1,
+        prev: "https://prev-example.com",
+        next: "https://next-example.com"
+      },
+      })
 
       expect(await compute.getPage()).toStrictEqual({
         formations: [
@@ -76,31 +70,22 @@ describe('Given Compute API', () => {
       })
   });
   
-  test('get a formation', async () => {
-    seaFetch.mockImplementation((token: string) => ({
-      ...postTokenMock,
-      get: (url: string) => textBody(API_DEFAULT_FORMATION)
-    }))    
+  test('get a formation', async () => {    
+    server.get("/formations/frm-0oug6ng05tvll000e14k2sd3og", API_DEFAULT_FORMATION)
 
     expect(await compute.get("frm-0oug6ng05tvll000e14k2sd3og")).toStrictEqual(DEFAULT_FORMATION)    
   })
 
   
   test('delete a formation by id ', async () => {    
-    seaFetch.mockImplementation((token: string) => ({
-      ...postTokenMock,
-      delete: (url: string) => textBody("Ok")
-    }))  
+    server.delete("/formations/frm-0oug6ng05tvll000e14k2sd3og", "Ok")  
 
     await expect(compute.delete("frm-0oug6ng05tvll000e14k2sd3og")).resolves.not.toThrow()
   });
 
   
-  test('create a formation ', async () => {    
-    seaFetch.mockImplementation((token: string) => ({
-      ...postTokenMock,
-      post:(url: string, body: string) => textBody("Ok")
-    })) 
+  test('create a formation ', async () => {      
+    server.post("/formations", API_DEFAULT_FORMATION, "Ok")
 
     await expect(compute.create(DEFAULT_FORMATION)).resolves.not.toThrow()
   });

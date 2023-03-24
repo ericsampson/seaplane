@@ -23,7 +23,8 @@ describe('Given Restrictions API', () => {
     apiKey: "test_apikey"
   })
   const restrictions = new Restrictions(config)  
-
+  const server = mockServer("https://metadata.cplane.cloud/v1")
+  
   beforeAll(() => {
     mockIdentify(config)
   })

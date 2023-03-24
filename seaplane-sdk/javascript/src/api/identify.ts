@@ -32,7 +32,8 @@ export default class Identify {
     const response = await seaFetch(token).post(this.url, JSON.stringify(json));
 
     if (response.ok) {
-      const body = await response.json();
+      const resBody = await response.text();      
+      const body = resBody as any;
       this.accessToken = body.token;
       return body.token;
     } else {

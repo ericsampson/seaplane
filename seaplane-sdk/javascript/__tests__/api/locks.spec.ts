@@ -4,7 +4,7 @@ import seaFetch from '../../src/api/seaFetch';
 
 jest.mock("../../src/api/seaFetch", () => jest.fn());
 
-import { mockIdentify, mockServer, postTokenMock } from './helper';
+import { mockServer } from './helper';
 
 const EMPTY_BODY = {}
 
@@ -14,11 +14,7 @@ describe('Given Locks API', () => {
     apiKey: "test_apikey"
   })  
   const locks = new Locks(config)
-  const server = mockServer("https://metadata.cplane.cloud/v1")
-
-  beforeAll(() => {
-    mockIdentify(config)
-  })
+  const server = mockServer("https://metadata.cplane.cloud/v1")  
 
   afterEach(() => {
     seaFetch.mockClear()

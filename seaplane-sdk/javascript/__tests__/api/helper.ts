@@ -6,37 +6,35 @@ import seaFetch from '../../src/api/seaFetch';
 jest.mock("../../src/api/seaFetch", () => jest.fn());
 
 
-export const postTokenMock = {
-  post: (url: string, body: string) => {
-    expect(url).toBe("https://flightdeck.cplane.cloud/v1/token")
-
-    return Promise.resolve({ 
-      ok: () => true,
-      json: () => Promise.resolve({token: "test_token"}) 
-    })
-  }
-}
-
 const textBody = (body: Object) => Promise.resolve({ 
   ok: () => true,
   text: () => Promise.resolve(body) 
 })
+
+export const postTokenMock = {
+  post: (url: string, body: string) => {
+    expect(url).toBe("https://flightdeck.cplane.cloud/v1/token")
+
+    return textBody({token: "test_token"})
+  }
+}
 
 export const mockIdentify = (configuration: Configuration) => {  
   seaFetch.mockImplementation((token: string) => ({
     post: (url: string, body: string) => {                
       return Promise.resolve({ 
         ok: () => true,
-        json: () => Promise.resolve({token: "test_token"}) 
+        text: () => Promise.resolve({token: "test_token"}) 
       })
     }
   }))
 }
 
-export const mockServer = (serverUrl: string)  => ({
+export const mockServer = (serverUrl: string, auth: boolean = true)  => ({
   get: (path: string, body: Object) => {
+    const authPost = auth ? postTokenMock : {}
     seaFetch.mockImplementation((token: string) => ({
-      ...postTokenMock,
+      ...authPost,
       get: (url: string) => {
         expect(url).toBe(serverUrl+path)
         
@@ -65,7 +63,8 @@ export const mockServer = (serverUrl: string)  => ({
     }))  
   },
   post: (path: string, body: Object, returnBody: Object) => {
-    seaFetch
+    if(auth) {      
+      seaFetch
       .mockReturnValue(postTokenMock)
       .mockReturnValueOnce({
         post: (url: string, postBody: string) => {
@@ -75,5 +74,15 @@ export const mockServer = (serverUrl: string)  => ({
           return textBody(returnBody)
         }
       })
+    } else {
+      seaFetch.mockImplementation((token: string) => ({
+        post: (url: string, postBody: string) => {
+          expect(url).toBe(serverUrl+path)
+          expect(postBody).toBe(JSON.stringify(body))
+
+          return textBody(returnBody)
+        }
+      }))
+    }
   }
 })

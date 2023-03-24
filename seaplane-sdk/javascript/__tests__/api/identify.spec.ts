@@ -5,12 +5,15 @@ import seaFetch from '../../src/api/seaFetch';
 
 jest.mock("../../src/api/seaFetch", () => jest.fn());
 
+import { mockServer } from './helper';
+const EMPTY_BODY = {}
+
 describe('Given Identify', () => {
 
   const config = new Configuration({ 
     apiKey: "test_apikey"
   })
-
+  const server = mockServer("https://flightdeck.cplane.cloud/v1", false)
 
   beforeAll(() => {
     
@@ -20,13 +23,8 @@ describe('Given Identify', () => {
     seaFetch.mockClear()
   })
 
-  test('returns the token and save it locally', async() => {    
-    seaFetch.mockImplementation((token: string) => ({
-      post: (url: string, body: string) => Promise.resolve({ 
-        ok: () => true,
-        json: () => Promise.resolve({token: "test_token"}) 
-      })
-    }))
+  test('returns the token and save it locally', async() => {        
+    server.post("/token", EMPTY_BODY, {token: "test_token"})
 
     const identify = new Identify(config)
     
@@ -65,13 +63,8 @@ describe('Given Identify', () => {
     expect(identify.accessToken).toBe("this_is_a_token")
   })
 
-  test('accessToken should be the same as the set token', async() => {        
-    seaFetch.mockImplementation((token: string) => ({
-      post: (url: string, body: string) => Promise.resolve({ 
-        ok: () => true,
-        json: () => Promise.resolve({token: "renewed_token"}) 
-      })
-    }))
+  test('accessToken should be the same as the set token', async() => {            
+    server.post("/token", EMPTY_BODY, {token: "renewed_token"})
 
     const identify = new Identify(config)
         

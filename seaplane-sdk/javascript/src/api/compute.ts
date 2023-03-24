@@ -13,9 +13,12 @@ export default class Compute {
   }
 
   async create(formation: Formation): Promise<void> {
+    const gateway = formation.gateway_flight
+    delete formation["gateway_flight"]
+
     const payload = {
       ...formation,
-      'gateway-flight': formation.gateway_flight,
+      'gateway-flight': gateway,
     };
 
     await this.request.send((token) => seaFetch(token).post(this.url, JSON.stringify(payload)));
