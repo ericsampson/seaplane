@@ -56,7 +56,7 @@ describe('Given Compute API', () => {
         prev: "https://prev-example.com",
         next: "https://next-example.com"
       },
-      })
+    })
 
       expect(await compute.getPage()).toStrictEqual({
         formations: [
