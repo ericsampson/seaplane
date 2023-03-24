@@ -13,8 +13,8 @@ export default class Compute {
   }
 
   async create(formation: Formation): Promise<void> {
-    const gateway = formation.gateway_flight
-    delete formation["gateway_flight"]
+    const gateway = formation.gateway_flight;
+    delete formation['gateway_flight'];
 
     const payload = {
       ...formation,
