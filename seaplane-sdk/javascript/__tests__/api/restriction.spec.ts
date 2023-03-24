@@ -6,16 +6,7 @@ import { RestrictionState, SeaplaneApi } from '../../src/model/restrictions';
 
 jest.mock("../../src/api/seaFetch", () => jest.fn());
 
-import { postTokenMock } from './helper';
-
-const textBody = (body: Object) => Promise.resolve({ 
-  ok: () => true,
-  text: () => Promise.resolve(body) 
-})
-
-const mockIdentify = (configuration: Configuration) => {
-  seaFetch.mockImplementation((token: string) => (postTokenMock))
-}
+import { mockServer } from './helper';
 
 describe('Given Restrictions API', () => {
 
@@ -24,34 +15,27 @@ describe('Given Restrictions API', () => {
   })
   const restrictions = new Restrictions(config)  
   const server = mockServer("https://metadata.cplane.cloud/v1")
-  
-  beforeAll(() => {
-    mockIdentify(config)
-  })
 
   afterEach(() => {
     seaFetch.mockClear()
   })
 
   test('get page returns one element', async () => {  
-    seaFetch.mockImplementation((token: string) => ({      
-      ...postTokenMock,
-      get: (url: string) => textBody({
-        "next_api": "locks",
-        "next_key": "dGhlIG5leHQga2V5",
-        "restrictions": [{
-          "api": "config",
-          "directory": "Zm9vL2Jhcgo",
-          "details": {
-            "regions_allowed": ["XE"],
-            "regions_denied": ["XE"],
-            "providers_allowed": ["AWS"],
-            "providers_denied": ["AWS"]
-          },
-          "state": "enforced"
-        }]
-      })
-    }))
+    server.get("/restrict?", {
+      "next_api": "locks",
+      "next_key": "dGhlIG5leHQga2V5",
+      "restrictions": [{
+        "api": "config",
+        "directory": "Zm9vL2Jhcgo",
+        "details": {
+          "regions_allowed": ["XE"],
+          "regions_denied": ["XE"],
+          "providers_allowed": ["AWS"],
+          "providers_denied": ["AWS"]
+        },
+        "state": "enforced"
+      }]
+    })
 
     expect(await restrictions.getPage()).toStrictEqual({
       nextApi: SeaplaneApi.Locks,
